@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROI Chatbot Interface</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Proxima+Nova:wght@400;600;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Proxima Nova', sans-serif;
+      background: linear-gradient(135deg, #5B61FF 0%, #00D1FF 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .chat-wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 90vw;
+      max-width: 400px;
+      height: 80vh;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+    .chat-header {
+      padding: 1rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: #fff;
+      background: transparent;
+    }
+    .chat-container {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .message {
+      max-width: 75%;
+      padding: 0.75rem 1rem;
+      border-radius: 16px;
+      position: relative;
+      line-height: 1.4;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    .message.show {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .message.user {
+      align-self: flex-end;
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+      border-bottom-right-radius: 0;
+    }
+    .message.bot {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.35);
+      color: #fff;
+      border-bottom-left-radius: 0;
+    }
+    .chat-input {
+      display: flex;
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.20);
+    }
+    .chat-input input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 0.75rem;
+      font-size: 1rem;
+      color: #fff;
+    }
+    .chat-input input::placeholder {
+      color: rgba(255,255,255,0.7);
+    }
+    .chat-input button {
+      background: #fff;
+      color: #5B61FF;
+      border: none;
+      padding: 0 1rem;
+      margin-left: 0.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .chat-input button:hover:not(:disabled) {
+      background: #f0f0f0;
+    }
+    .chat-input button:disabled {
+      background: rgba(255,255,255,0.5);
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-wrapper">
+    <div class="chat-header">ROI Chatbot</div>
+    <div class="chat-container" id="chatContainer">
+      <div class="message bot show">Hello! What school can I get into with Arts major from De Anza College?</div>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="Type your question..." autocomplete="off" />
+      <button id="sendBtn" disabled>Send</button>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const chatContainer = document.getElementById('chatContainer');
+
+    input.addEventListener('input', () => {
+      sendBtn.disabled = !input.value.trim();
+    });
+
+    function handleSend() {
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      sendBtn.disabled = true;
+      appendMessage(text, 'user');
+      scrollToBottom();
+
+      const typingMsg = appendMessage('Typing...', 'bot');
+      scrollToBottom();
+
+      setTimeout(() => {
+        chatContainer.removeChild(typingMsg);
+        const botText = `Based on transferring from De Anza College in Arts, you could consider: UC Santa Cruz, CSU Long Beach, or local private colleges. This pathway typically yields a 3-year break-even and strong career prospects.`;
+        typewriter(botText, 'bot');
+      }, 1500);
+    }
+
+    sendBtn.addEventListener('click', handleSend);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !sendBtn.disabled) {
+        e.preventDefault();
+        handleSend();
+      }
+    });
+
+    function appendMessage(text, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.classList.add('message', sender);
+      msgDiv.textContent = text;
+      chatContainer.appendChild(msgDiv);
+      setTimeout(() => msgDiv.classList.add('show'), 10);
+      return msgDiv;
+    }
+
+    function typewriter(text, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.classList.add('message', sender);
+      chatContainer.appendChild(msgDiv);
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          msgDiv.textContent += text.charAt(i);
+          i++;
+          scrollToBottom();
+          setTimeout(type, 10);
+        } else {
+          msgDiv.classList.add('show');
+        }
+      }
+      type();
+      return msgDiv;
+    }
+
+    function scrollToBottom() {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  </script>
+</body>
+</html>
